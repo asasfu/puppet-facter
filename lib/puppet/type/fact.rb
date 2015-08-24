@@ -123,7 +123,45 @@ Puppet::Type.newtype(:fact) do
     #end
 
     #defaultto 'true'
-    validate do |value|
+   def is_yaml_to_hash(is)
+#     puts "is_yaml_to_hash: #{is}"
+     begin
+       YAML.load(is).values[0]
+     rescue
+       is
+     end
+   end
+
+   def munging(value)
+     if value.is_a?(Array)
+       if value[1].nil?
+         if value[0].is_a?(Hash)
+#           puts "HASH!"
+           prov_result = value[0]
+#           puts prov_result
+           return prov_result
+         else
+#           puts "ONLY A STRING or SINGLE ARRAY VALUE"
+           prov_result = value[0].to_s
+           return prov_result
+         end
+       else
+#         puts "FULL ON ARRAY"
+         prov_result = value
+         return prov_result
+       end
+     elsif value.is_a?(Hash)
+#       puts "HASHmunge: #{value}"
+       return value
+     else
+#       puts "Didn't match any other munge: #{value}"
+       value_hash = is_yaml_to_hash(value)
+       value_hash = value if value_hash.nil? || value_hash.empty? 
+     end
+     return value_hash
+   end
+
+   validate do |value|
       if value.is_a?(Hash)
         fail("Content cannot be empty or whitespace") if value.empty?
       else
@@ -133,49 +171,49 @@ Puppet::Type.newtype(:fact) do
 
     munge do |value|
 #      puts "Munging content: #{value}"
-      if value.is_a?(Array)
-        if value[1].nil?
-          if value[0].is_a?(Hash)
-#            puts "HASH!"
-            prov_result = value[0]
-#            puts prov_result
-            return prov_result
-          else
-#            puts "ONLY A STRING or SINGLE ARRAY VALUE"
-            prov_result = value[0].to_s
-            return prov_result
-          end
-        else
-#          puts "FULL ON ARRAY"
-          prov_result = value
-          return prov_result
-        end
-      elsif value.is_a?(Hash)
-#        puts "HASHmunge: #{value}"
-        return value
-      else
-#        puts "Didn't match any other munge: #{value}"
-        value_hash = is_yaml_to_hash(value)
-        value_hash = value if value_hash.nil? || value_hash.empty? 
-#        puts "Since it didn't match, I tested yaml_to_hash: #{value_hash}"
-        return value_hash
-      end
+      munging(value)
+#      if value.is_a?(Array)
+#        if value[1].nil?
+#          if value[0].is_a?(Hash)
+##            puts "HASH!"
+#            prov_result = value[0]
+##            puts prov_result
+#            return prov_result
+#          else
+##            puts "ONLY A STRING or SINGLE ARRAY VALUE"
+#            prov_result = value[0].to_s
+#            return prov_result
+#          end
+#        else
+##          puts "FULL ON ARRAY"
+#          prov_result = value
+#          return prov_result
+#        end
+#      elsif value.is_a?(Hash)
+##        puts "HASHmunge: #{value}"
+#        return value
+#      else
+##        puts "Didn't match any other munge: #{value}"
+#        value_hash = is_yaml_to_hash(value)
+#        value_hash = value if value_hash.nil? || value_hash.empty? 
+##        puts "Since it didn't match, I tested yaml_to_hash: #{value_hash}"
+#        return value_hash
+#      end
     end
 
-    #def should_to_s(s)
-    #  puts "Should_to_s #{s}\n"
-    #  "#{s[0]}"
-    #end
+    def should_to_s(s)
+#      puts "Should_to_s #{s}\n"
+      munging(s)
+      #if s[0]
+      #s.is_a?(Array) ? s : s[0]
+#      if s.is_a?(Array)
+#        return s
+#      else
+#        return s[0]
+#      end
+#      "#{s}"
+    end
     
-    def is_yaml_to_hash(is)
-#      puts "is_yaml_to_hash: #{is}"
-      begin
-        YAML.load(is).values[0]
-      rescue
-        is
-      end
-    end
-
 
     #def is_to_s(is)
     #  #puts "is_to_s #{is}"
@@ -191,7 +229,9 @@ Puppet::Type.newtype(:fact) do
     #end
 
     def insync?(is)
-#      puts "Insync is: #{is}"
+      #puts "Insync is: #{is}"
+      #puts "Insync should: #{should}"
+      #puts "Insync @should: #{@should}"
       result = is_yaml_to_hash(is)
       #if result.is_a?(Array)
       #  puts "Insync is array: #{result}"
@@ -201,8 +241,8 @@ Puppet::Type.newtype(:fact) do
       #  super([result])
       #end
       #
-#      result.is_a?(Array) ? (puts "Insync is array: #{result}") : (puts "Insync is not array: #{[result]}")
-#      puts "Insync should: #{should}"
+      result.is_a?(Array) ? (puts "Insync is array: #{result}") : (puts "Insync is not array: #{[result]}")
+      puts "Insync should: #{should}"
       result.is_a?(Array) ? super(result) : super([result])
       #
       #result.is_a?(Array) ? (puts "Insync is array: #{result}") : (puts "Insync is not array: #{[result]}")
