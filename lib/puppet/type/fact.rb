@@ -124,7 +124,11 @@ Puppet::Type.newtype(:fact) do
 
     #defaultto 'true'
     validate do |value|
-      fail("Content cannot be empty or whitespace") if munge(value).match(/^\s*$/)
+      if value.is_a?(Hash)
+        fail("Content cannot be empty or whitespace") if value.empty?
+      else
+        fail("Content cannot be empty or whitespace") if munge(value).match(/^\s*$/)
+      end
     end
 
     munge do |value|
