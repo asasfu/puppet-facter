@@ -1,0 +1,18 @@
+{
+  "name": "asasfu-facter",
+  "version": "0.0.1",
+  "author": "asasfu",
+  "summary": "Facter facts.d module for creating structured custom facts",
+  "description": "Facts.d module which supports creating structured as well as regular string facts.",
+  "license": "Apache 2.0",
+  "source": "https://github.com/sfu-rcg/puppet-facter",
+  "project_page": "https://github.com/sfu-rcg/puppet-facter",
+  "issues_url": "https://github.com/sfu-rcg/puppet-facter/issues",
+  "dependencies": [
+    {
+      "name": "puppetlabs-stdlib",
+      "version_requirement": ">= 1.0.0"
+    }
+  ]
+}
+
