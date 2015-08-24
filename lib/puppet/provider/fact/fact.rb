@@ -31,6 +31,7 @@ Puppet::Type.type(:fact).provide(:fact) do
 
   def self.format_file(filename, providers)
     return "" if providers.empty?
+    return "" if not collect_absent_providers_for_file(filename).empty?
 
     result = ""
     provider = providers.is_a?(Array) ? providers.last : providers
@@ -68,5 +69,12 @@ Puppet::Type.type(:fact).provide(:fact) do
       end
     end
   end
+
+  def self.collect_absent_providers_for_file(filename)
+    @all_providers.select do |provider|
+      provider.select_file == filename and provider.ensure == :absent
+    end
+  end
+
 
 end
