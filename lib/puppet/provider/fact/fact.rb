@@ -42,8 +42,10 @@ Puppet::Type.type(:fact).provide(:fact) do
     
     prov_result = munge(provider_content)
 
-    if provider.ensure == :present and provider.name == basename
-      result = { provider.name => prov_result }.to_yaml
+    if not prov_result.nil? || not prov_result.empty?
+      if provider.ensure == :present and provider.name == basename
+        result = { provider.name => prov_result }.to_yaml
+      end
     end
 
     return result
