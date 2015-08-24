@@ -5,10 +5,8 @@ Puppet::Type.type(:fact).provide(:fact) do
 
   desc "The fact provider to create structured custom facts"
 
-
-  @unlink_empty_files = true
-
   include PuppetX::FileMapper
+  @unlink_empty_files = true
 
   def select_file
     "/etc/facter/facts.d/#{@resource[:name]}.yaml"
