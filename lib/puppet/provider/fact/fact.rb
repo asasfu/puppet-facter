@@ -24,63 +24,63 @@ Puppet::Type.type(:fact).provide(:fact) do
 #    raise
 #  end
 
-#  def self.prefetch(resources = {})
-#    #puts "FACT PREFETCH"
-#
-#    # generate hash of {provider_name => provider}
-#    providers = instances.inject({}) do |hash, instance|
-#      hash[instance.name] = instance
-#      hash
-#    end
-#    puts "FACT PREFETCH, providers: #{providers}"
-#    #puts "FACT PREFETCH, resources: #{resources}"
-#
-#    # For each prefetched resource, try to match it to a provider
-#    resources.each_pair do |resource_name, resource|
-#      puts "FACT PREFETCH, checking, res_name: #{resource_name} - res: #{resource.to_s}"
-#      puts "FACT PREFETCH, checking, resource[:name]: #{resource[:name]}"
-#      puts "FACT PREFETCH, checking, resource[:content]: #{resource[:content]}"
-#      #working#resource_name_res = select_file(resource).include?(resource_name) ? select_file(resource) : resource_name
-#      resource_name_res = select_file(resource).include?(resource_name) ? select_file(resource) : resource_name
-#      puts "Checking #{resource} to see if resource_name_res is: #{select_file(resource)} or #{resource_name}"
-#      #resource_name_res = select_file.include?(resource_name) ? select_file : resource_name
-#      #puts "FACT PREFETCH, checking2, providers[#{resource_name}]: #{providers[resource_name_res]}"
-#      #puts "FACT PREFETCH, checking3, providers[#{resource_name_res}]: #{providers[resource_name_res]}"
-#      if provider = providers[resource_name_res]
-#        puts "FACT PREFETCH, found provider: #{provider}"
-#        puts "FACT PREFETCH, found provider-: #{provider.content}"
-#        resource.provider = provider
-#      elsif provider = providers[resource_name]
-#        puts "FACT PREFETCH, found provider2: #{provider[:@property_hash]}"
-#        resource.provider = provider
-#      else
-#        puts "FACT PREFETCH, NO PROVIDER FOUND"
-#      end
-#      #if provider = providers[resource_name]
-#      #  resource.provider = provider
-#      #end
-#    end
-#  end
+  def self.prefetch(resources = {})
+    #puts "FACT PREFETCH"
+
+    # generate hash of {provider_name => provider}
+    providers = instances.inject({}) do |hash, instance|
+      hash[instance.name] = instance
+      hash
+    end
+    puts "FACT PREFETCH, providers: #{providers}"
+    #puts "FACT PREFETCH, resources: #{resources}"
+
+    # For each prefetched resource, try to match it to a provider
+    resources.each_pair do |resource_name, resource|
+      puts "FACT PREFETCH, checking, res_name: #{resource_name} - res: #{resource.to_s}"
+      puts "FACT PREFETCH, checking, resource[:name]: #{resource[:name]}"
+      puts "FACT PREFETCH, checking, resource[:content]: #{resource[:content]}"
+      #working#resource_name_res = select_file(resource).include?(resource_name) ? select_file(resource) : resource_name
+      resource_name_res = select_file(resource).include?(resource_name) ? select_file(resource) : resource_name
+      puts "Checking #{resource} to see if resource_name_res is: #{select_file(resource)} or #{resource_name}"
+      #resource_name_res = select_file.include?(resource_name) ? select_file : resource_name
+      #puts "FACT PREFETCH, checking2, providers[#{resource_name}]: #{providers[resource_name_res]}"
+      #puts "FACT PREFETCH, checking3, providers[#{resource_name_res}]: #{providers[resource_name_res]}"
+      if provider = providers[resource_name_res]
+        puts "FACT PREFETCH, found provider: #{provider}"
+        puts "FACT PREFETCH, found provider-: #{provider.content}"
+        resource.provider = provider
+      elsif provider = providers[resource_name]
+        puts "FACT PREFETCH, found provider2: #{provider}"
+        resource.provider = provider
+      else
+        puts "FACT PREFETCH, NO PROVIDER FOUND"
+      end
+      #if provider = providers[resource_name]
+      #  resource.provider = provider
+      #end
+    end
+  end
 
 
-#  def self.instances
-#    puts "FACT INSTANCES"
-#    puts self.name
-#    puts @property_hash
-#    puts "Finish INSTANCES"
-#    provider_hashes = load_all_providers_from_disk
-#
-#    provider_hashes.map do |h|
-#      h.merge!({:provider => self.name, :ensure => :present})
-#      new(h)
-#    end
-#
-#  rescue
-#    # If something failed while loading instances, mark the provider class
-#    # as failed and pass the exception along
-#    @failed = true
-#    raise
-#  end
+  def self.instances
+    puts "FACT INSTANCES"
+    puts self.name
+    puts @property_hash
+    puts "Finish INSTANCES"
+    provider_hashes = load_all_providers_from_disk
+
+    provider_hashes.map do |h|
+      h.merge!({:provider => self.name, :ensure => :present})
+      new(h)
+    end
+
+  rescue
+    # If something failed while loading instances, mark the provider class
+    # as failed and pass the exception along
+    @failed = true
+    raise
+  end
 #
 #
 #  def self.prefetch(resources)
@@ -192,18 +192,19 @@ Puppet::Type.type(:fact).provide(:fact) do
 #    format_file
 #  end
 
-#  def self.select_file(resource)
-#    #puts "SELF SELECT_FILE prov_name: #{@provider_name}"
-#    puts "SELF SELECT_FILE #{resource[:target]}"
-#    "/etc/facter/facts.d/#{resource[:target]}.yaml"
-#    #"#{@property_hash[:target]}"
-#  end
+  def self.select_file(resource)
+    #puts "SELF SELECT_FILE prov_name: #{@provider_name}"
+    puts "SELF SELECT_FILE #{resource[:target]}"
+    "/etc/facter/facts.d/#{resource[:target]}.yaml"
+    #"#{@property_hash[:target]}"
+  end
 
   # Not used right now but REQUIRED by FILEMAPPER
   # Not used because we moved prefetch & instances along with select file, into our class
   def select_file
 #    puts "SELECT_FILE name: #{@property_hash[:name]} - target: #{@property_hash[:target]}"
-    "/etc/facter/facts.d/#{@property_hash[:target]}.yaml"
+    #"/etc/facter/facts.d/#{@property_hash[:target]}.yaml"
+    "/etc/facter/facts.d/#{@resource[:target]}.yaml"
     #"#{@property_hash[:target]}"
   end
 
@@ -230,10 +231,10 @@ Puppet::Type.type(:fact).provide(:fact) do
   end
 
   def self.parse_file(filename, contents)
-    #puts "reached parse_file"
+    puts "reached parse_file"
     #return [{}] if filename != "/etc/facter/facts.d/#{@property_hash[:target]}.yaml"
     return [{}] if contents.nil?
-    #puts filename
+    puts filename
 #
 #    result = {}
 #    re = /^(.+?)=(.+)$/
@@ -248,7 +249,8 @@ Puppet::Type.type(:fact).provide(:fact) do
 #
 #    return [result]
     result = {}
-    result[:name] = filename
+    #result[:name] = filename
+    result[:name] = File.basename(filename, ".yaml")
     begin
       result[:content] = YAML.load(contents).values[0]
     rescue

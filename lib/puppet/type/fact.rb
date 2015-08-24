@@ -39,15 +39,35 @@ Puppet::Type.newtype(:fact) do
     desc "The fact name"
     isnamevar
 
-    munge do |discard|
-#      puts "DISCARD #{discard}"
-#      puts "Orig params: #{@resource.original_parameters}"
-      if discard.include?('/etc/facter/facts.d/')
-        discard
-      else
-        "/etc/facter/facts.d/#{discard}.yaml"
-      end
+    validate do |value|
+      fail("Name cannot be empty or whitespace") if munge(value).match(/^\s*$/)
+      fail("Name cannot contain a path, only alphanumeric including underscores and dashes") if munge(value).match(/\//)
     end
+
+
+
+    #munge do |discard|
+    #  puts "DISCARD #{discard}"
+    #  puts "Orig params: #{@resource.original_parameters}"
+    #  if discard.include?('/etc/facter/facts.d/')
+    #    puts "Munge: returning what you gave me #{discard}"
+    #    discard
+    #  else
+    #    puts "Munge: adding path before return /etc/facter/facts.d/#{discard}.yaml"
+    #    "/etc/facter/facts.d/#{discard}.yaml"
+    #  end
+    #end
+    #working#munge do |discard|
+    #working#  puts "DISCARD #{discard}"
+    #working#  puts "Orig params: #{@resource.original_parameters}"
+    #working#  if discard.include?('/etc/facter/facts.d/')
+    #working#    puts "Munge: returning what you gave me #{discard}"
+    #working#    discard
+    #working#  else
+    #working#    puts "Munge: adding path before return /etc/facter/facts.d/#{discard}.yaml"
+    #working#    "/etc/facter/facts.d/#{discard}.yaml"
+    #working#  end
+    #working#end
   end
 
   newproperty(:content, :array_matching => :all) do
@@ -102,10 +122,10 @@ Puppet::Type.newtype(:fact) do
     #  insync
     #end
 
-    defaultto 'true'
-    #validate do |value|
-    #  fail("Content cannot be empty or whitespace") if munge(value).match(/^\s*$/)
-    #end
+    #defaultto 'true'
+    validate do |value|
+      fail("Content cannot be empty or whitespace") if munge(value).match(/^\s*$/)
+    end
 
     munge do |value|
 #      puts "Munging content: #{value}"
@@ -238,23 +258,27 @@ Puppet::Type.newtype(:fact) do
   newproperty(:target) do
     desc "Target file to write under /etc/facter/facts.d"
     #defaultto { "/etc/facter/facts.d/#{@resource[:name]}.yaml" }
-    defaultto { @resource[:name] }
+    #
 
-    munge do |discard|
-      #return @resource[:name] if discard == @resource[:name]
-      #return @resource[:name][/.*\/(.*)\.yaml/,1]
-      #discard == @resource[:name] ? @resource[:name] : @resource[:name][/.*\/(.*)\.yaml/,1]
+    #isnamevar
+
+    defaultto { target = @resource[:name][/.*\/(.*)\.yaml/,1] ? @resource[:name][/.*\/(.*)\.yaml/,1] : @resource[:name] }
+
+#    munge do |discard|
+#      #return @resource[:name] if discard == @resource[:name]
+#      #return @resource[:name][/.*\/(.*)\.yaml/,1]
+#      #discard == @resource[:name] ? @resource[:name] : @resource[:name][/.*\/(.*)\.yaml/,1]
 #      puts "Target discard: #{discard}"
-      if discard =~ /.*\/(.*)\.yaml/
+#      if discard =~ /.*\/(.*)\.yaml/
 #        puts "Found #{discard} contains /etc/facter/facts.d, so I'm trimming that"
 #        puts "Returning #{discard[/.*\/(.*)\.yaml/,1]}"
-        discard[/.*\/(.*)\.yaml/,1]
-      else
+#        discard[/.*\/(.*)\.yaml/,1]
+#      else
 #        puts "Found #{discard} has no path, which is good"
-        discard
-      end
-      #discard =~ /.*\/(.*)\.yaml/ ? @resource[:name] : @resource[:name][/.*\/(.*)\.yaml/,1]
-    end
+#        discard
+#      end
+#      #discard =~ /.*\/(.*)\.yaml/ ? @resource[:name] : @resource[:name][/.*\/(.*)\.yaml/,1]
+#    end
   end
 
   autorequire :file do
