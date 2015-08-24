@@ -259,35 +259,35 @@ Puppet::Type.newtype(:fact) do
 
   end
 
-  newproperty(:target) do
-    desc "Target file to write under /etc/facter/facts.d"
-    #defaultto { "/etc/facter/facts.d/#{@resource[:name]}.yaml" }
-    #
-
-    #isnamevar
-
-    defaultto { target = @resource[:name][/.*\/(.*)\.yaml/,1] ? @resource[:name][/.*\/(.*)\.yaml/,1] : @resource[:name] }
-
-#    munge do |discard|
-#      #return @resource[:name] if discard == @resource[:name]
-#      #return @resource[:name][/.*\/(.*)\.yaml/,1]
-#      #discard == @resource[:name] ? @resource[:name] : @resource[:name][/.*\/(.*)\.yaml/,1]
-#      puts "Target discard: #{discard}"
-#      if discard =~ /.*\/(.*)\.yaml/
-#        puts "Found #{discard} contains /etc/facter/facts.d, so I'm trimming that"
-#        puts "Returning #{discard[/.*\/(.*)\.yaml/,1]}"
-#        discard[/.*\/(.*)\.yaml/,1]
-#      else
-#        puts "Found #{discard} has no path, which is good"
-#        discard
-#      end
-#      #discard =~ /.*\/(.*)\.yaml/ ? @resource[:name] : @resource[:name][/.*\/(.*)\.yaml/,1]
-#    end
-  end
+#  newproperty(:target) do
+#    desc "Target file to write under /etc/facter/facts.d"
+#    #defaultto { "/etc/facter/facts.d/#{@resource[:name]}.yaml" }
+#    #
+#
+#    #isnamevar
+#
+#    defaultto { target = @resource[:name][/.*\/(.*)\.yaml/,1] ? @resource[:name][/.*\/(.*)\.yaml/,1] : @resource[:name] }
+#
+##    munge do |discard|
+##      #return @resource[:name] if discard == @resource[:name]
+##      #return @resource[:name][/.*\/(.*)\.yaml/,1]
+##      #discard == @resource[:name] ? @resource[:name] : @resource[:name][/.*\/(.*)\.yaml/,1]
+##      puts "Target discard: #{discard}"
+##      if discard =~ /.*\/(.*)\.yaml/
+##        puts "Found #{discard} contains /etc/facter/facts.d, so I'm trimming that"
+##        puts "Returning #{discard[/.*\/(.*)\.yaml/,1]}"
+##        discard[/.*\/(.*)\.yaml/,1]
+##      else
+##        puts "Found #{discard} has no path, which is good"
+##        discard
+##      end
+##      #discard =~ /.*\/(.*)\.yaml/ ? @resource[:name] : @resource[:name][/.*\/(.*)\.yaml/,1]
+##    end
+#  end
 
   autorequire :file do
 #    puts "AUTOREQUIRE /etc/facter/facts.d/#{self[:target]}.yaml"
-    "/etc/facter/facts.d/#{self[:target]}.yaml"
+    "/etc/facter/facts.d/#{self[:name]}.yaml"
   end
 
 end
