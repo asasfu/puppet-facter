@@ -41,23 +41,6 @@ Puppet::Type.type(:fact).provide(:fact) do
     provider_content = provider.content
     
     prov_result = munge(provider_content)
-#    if not provider_content.nil?
-#      if provider_content.is_a?(Array)
-#        if provider_content[1].nil? 
-#          if provider_content[0].is_a?(Hash)
-#            prov_result = provider_content[0]
-#          else
-#            prov_result = provider_content[0].to_s
-#          end
-#        else
-#          prov_result = provider_content
-#        end
-#      elsif provider_content.is_a?(Hash)
-#        prov_result = provider_content
-#      else
-#        prov_result = provider_content
-#      end
-#    end
 
     if provider.ensure == :present and provider.name == basename
       result = { provider.name => prov_result }.to_yaml
