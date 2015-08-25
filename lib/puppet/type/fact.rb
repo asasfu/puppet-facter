@@ -20,8 +20,8 @@ Puppet::Type.newtype(:fact) do
     desc "The fact name"
 
     validate do |value|
-      fail("Name cannot be empty or whitespace") if munge(value).match(/^\s*$/)
-      fail("Name cannot contain a path, only alphanumeric including underscores and dashes") if munge(value).match(/\//)
+      fail("Name cannot be empty or whitespace") if value.match(/^\s*$/)
+      fail("Name cannot contain a path, only alphanumeric including underscores and dashes") if value.match(/\//)
     end
   end
 
@@ -79,6 +79,23 @@ Puppet::Type.newtype(:fact) do
       result = is_yaml_to_hash(is)
       result.is_a?(Array) ? super(result) : super([result])
     end
+  end
+
+  #Not meant to be implemented directly by people, rather it's meant to be used in a class as
+  # $purge_unmanaged = true
+  # resources { 'fact': purge => $purge_unmanaged }
+  # Fact { check_for_purge_unmanaged => $purge_unmanaged }
+  newparam(:check_for_purge_unmanaged) do
+    desc "This parameter will define whether or not to check for a resources { 'fact': purge => true } 
+    It is not meant to be implemented directly by people against fact { } resource,
+    rather it's meant to be used in a class as:
+
+    $purge_unmanaged = true
+    resources { 'fact': purge => $purge_unmanaged }
+    Fact { check_for_purge_unmanaged => $purge_unmanaged }i
+    "
+
+    defaultto { false }
   end
 
   autorequire :file do
