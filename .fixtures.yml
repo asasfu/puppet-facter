@@ -1,0 +1,6 @@
+fixtures:
+  forge_modules:
+    filemapper: "adrien/filemapper"
+    stdlib: "puppetlabs/stdlib"
+  symlinks:
+    facter: "#{source_dir}"
