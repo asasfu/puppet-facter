@@ -2,8 +2,21 @@ Puppet::Type.newtype(:fact) do
   @doc = "Create a custom fact as text file under /etc/facter/facts.d
       fact { 'environment':
         content => 'production',
-        target  => 'env',
-      }"
+      }
+  Results in a file environment.yaml with content:
+  ---
+  'environment': 'production'
+  
+  or
+      fact { 'hostgroups':
+        content => [ 'servers', 'linux' ]
+      }
+  Results in a file hostgroups.yaml with content:
+  ---
+  'hostgroups': 
+    - 'servers'
+    - 'linux'
+  "
 
   ensurable do
     defaultvalues
@@ -17,7 +30,7 @@ Puppet::Type.newtype(:fact) do
   end
 
   newparam(:name, :namevar => true) do
-    desc "The fact name"
+    desc "The fact name, this will be used as your fact root name as well."
 
     validate do |value|
       fail("Name cannot be empty or whitespace") if value.match(/^\s*$/)
@@ -79,23 +92,6 @@ Puppet::Type.newtype(:fact) do
       result = is_yaml_to_hash(is)
       result.is_a?(Array) ? super(result) : super([result])
     end
-  end
-
-  #Not meant to be implemented directly by people, rather it's meant to be used in a class as
-  # $purge_unmanaged = true
-  # resources { 'fact': purge => $purge_unmanaged }
-  # Fact { check_for_purge_unmanaged => $purge_unmanaged }
-  newparam(:check_for_purge_unmanaged) do
-    desc "This parameter will define whether or not to check for a resources { 'fact': purge => true } 
-    It is not meant to be implemented directly by people against fact { } resource,
-    rather it's meant to be used in a class as:
-
-    $purge_unmanaged = true
-    resources { 'fact': purge => $purge_unmanaged }
-    Fact { check_for_purge_unmanaged => $purge_unmanaged }i
-    "
-
-    defaultto { false }
   end
 
   autorequire :file do
