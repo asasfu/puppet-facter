@@ -7,52 +7,17 @@ Puppet::Type.type(:fact).provide(:fact) do
 
   include PuppetX::FileMapper
   @unlink_empty_files = true
-  class << self
-    attr_accessor :is_managed
-  end
 
   def select_file
-    # TODO. Should move this method into prefetch or instances so it's only called once
-    begin
-      res = @resource.catalog #.resource('resources', 'fact')
-      if res
-#        res2 = res.resource('resources', 'fact')
-#        puts "select_file: resource -#{res2}-"
-#        res3 = res2[:purge]
-#        puts "select_file: res3purge -#{res3}-"
-        self.class.is_managed = true if res.resource('resources', 'fact')[:purge] == true
-      end
-    rescue
-    end
-    #puts "select_file: resource.inspect -#{@resource[:check_for_purge_unmanaged].inspect}-"
-    #puts "select_file: resource param -#{@resource.parameter('["Fact", "trusted_string"]')}-"
-    ##puts "select_file: param -#{@resource.parameter('["Fact", "trusted_string"]').value}-"
-    ##puts "select_file: param2 -#{@resource.parameter('check_for_purge_unmanaged').value}-"
-    #puts "select_file: param2 -#{@resource.parameter('name').value}-"
-    ##puts "select_file: resource -#{@resource.parameters}-"
-    #puts "select_file: param -#{@resource[:check_for_purge_unmanaged]}-"
-    #puts "select_file: is_managed -#{self.class.is_managed}-"
-#    keys = @resource.parameters.keys
-#    keys.each do |key|
-#      begin
-#        value = @resource.parameters[key].value ? @resource.parameters[key].value : @resource.parameters[key].should
-#      rescue
-#      end
-#      #value = @resource.parameters[key].instance_variable_get(:@value) ? @resource.parameters[key].instance_variable_get(:@value) : @resource.parameters[key].instance_variable_get(:@should)
-#      puts "Param for key: #{key} is: #{value}"
-#    end
-#    names = @resource.parameters[:name].instance_variable_get(:@value)
-#    puts "select_file: keys -#{keys}-"
-#    puts "select_file: name -#{names}-"
-#    puts "select_file: managed? -#{@resource.managed?}-"
-#    self.class.is_managed = true if @resource[:check_for_purge_unmanaged] == true
+    # This begin section was done because if we somehow end up with a fact YAML file that has the same exact fact in it, it will cause an issue
+    # Therefore, we log this and delete the file.
     begin
       basename = @resource[:name]
     rescue
       begin
         basename = @property_hash[:name]
         filename = "/etc/facter/facts.d/#{basename}.yaml"
-        puts "Found clashing fact file, deleting it, whether managing it or not #{filename}"
+        send(:notice, "Found clashing fact file, deleting it, whether managing it or not #{filename}")
         File.delete(filename) if File.exist?(filename)
       rescue
         fail "Fact set failed, you must have a duplicate fact in your external facts directory.\n Check inside the YAML files for a matching root fact"
@@ -82,8 +47,6 @@ Puppet::Type.type(:fact).provide(:fact) do
   end
 
   def self.format_file(filename, providers)
-    header_folder if is_managed == true
-
     return "" if providers.empty?
     return "" if not collect_absent_providers_for_file(filename).empty?
 
@@ -126,20 +89,17 @@ Puppet::Type.type(:fact).provide(:fact) do
     end
   end
 
+  # This method exists as required to help assist with purging unmanaged facts if turned on
   def self.collect_absent_providers_for_file(filename)
     @all_providers.select do |provider|
       provider.select_file == filename and provider.ensure == :absent
     end
   end
 
-  def self.header_folder
-    puts "Write method to make the managed by puppet file in the facts.d dir"
-  end
-
   def self.header_file
     header = <<-HEADER
 # HEADER: This file is being managed by puppet. 
-# Note. The folder's YAML files may be managed by puppet as well if a '##MANAGED_BY_PUPPET' file exists in this folder
+# Note. The folder's YAML files may be managed by puppet as well if the maintainer has stated resources { 'fact': purge => true }
 # HEADER: External facts (facts.d) that are not being managed by puppet may be removed automatically.
 # HEADER: Last generated at: #{Time.now}
 HEADER
